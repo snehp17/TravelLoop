@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Misc
+.cache/
+.eslintcache
+
+# ── Exclude mock data and utility helpers ─────────────────────────
+# Mentors see pages/components only — not generated data files
+frontend/src/data/
+frontend/src/utils/

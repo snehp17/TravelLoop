@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TripStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TripRole {
+  OWNER
+  MEMBER
+}
+
+enum ActivityCategory {
+  ADVENTURE
+  FOOD
+  CULTURE
+  NATURE
+  NIGHTLIFE
+  RELAXATION
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  firstName String
+  lastName  String
+
+  email    String @unique
+  password String
+
+  mobileNo String?
+
+  city    String?
+  state   String?
+  country String?
+
+  dob DateTime?
+
+  language String?
+
+  preferredCurrency String?
+
+  profilePhoto String?
+
+  trips Trip[]
+
+  tripMemberships TripMember[]
+
+  packingItems PackingItem[]
+
+  notes TripNote[]
+
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model City {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  country String
+
+  description String?
+
+  population String?
+
+  averageDailyCost Float?
+
+  bestSeason String?
+
+  language String?
+
+  currency String?
+
+  vibe String?
+
+  imageUrl String?
+
+  latitude Float?
+
+  longitude Float?
+
+  createdAt DateTime @default(now())
+
+  attractions Attraction[]
+
+  activities CityActivity[]
+
+  tripStops TripStop[]
+}
+
+model Attraction {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  description String?
+
+  imageUrl String?
+
+  ticketPrice Float?
+
+  availabilityTime String?
+
+  cityId Int
+
+  city City @relation(fields: [cityId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model CityActivity {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  category ActivityCategory
+
+  description String?
+
+  duration String?
+
+  price Float?
+
+  costRange String?
+
+  imageUrl String?
+
+  availabilityTime String?
+
+  cityId Int
+
+  city City @relation(fields: [cityId], references: [id])
+
+  tripActivities TripActivity[]
+
+  createdAt DateTime @default(now())
+}
+
+model Trip {
+  id Int @id @default(autoincrement())
+
+  title String
+
+  description String?
+
+  startDate DateTime
+
+  endDate DateTime
+
+  budget Float?
+
+  coverPhoto String?
+
+  isPublic Boolean @default(false)
+
+  shareSlug String? @unique
+
+  status TripStatus @default(PLANNED)
+
+  userId Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  members TripMember[]
+
+  stops TripStop[]
+
+  packingItems PackingItem[]
+
+  notes TripNote[]
+
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model TripMember {
+  id Int @id @default(autoincrement())
+
+  tripId Int
+
+  userId Int
+
+  role TripRole @default(MEMBER)
+
+  joinedAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([tripId, userId])
+}
+
+model TripStop {
+  id Int @id @default(autoincrement())
+
+  tripId Int
+
+  cityId Int?
+
+  customCity String?
+
+  customCountry String?
+
+  startDate DateTime
+
+  endDate DateTime
+
+  notes String?
+
+  orderNumber Int
+
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  city City? @relation(fields: [cityId], references: [id])
+
+  activities TripActivity[]
+
+  tripNotes TripNote[]
+
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+}
+
+model TripActivity {
+  id Int @id @default(autoincrement())
+
+  tripStopId Int
+
+  cityActivityId Int?
+
+  customActivity String?
+
+  notes String?
+
+  estimatedCost Float?
+
+  scheduledTime String?
+
+  completed Boolean @default(false)
+
+  tripStop TripStop @relation(fields: [tripStopId], references: [id])
+
+  cityActivity CityActivity? @relation(fields: [cityActivityId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model PackingItem {
+  id Int @id @default(autoincrement())
+
+  tripId Int
+
+  addedByUserId Int?
+
+  itemName String
+
+  category String?
+
+  isPacked Boolean @default(false)
+
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  addedBy User? @relation(fields: [addedByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model TripNote {
+  id Int @id @default(autoincrement())
+
+  tripId Int
+
+  tripStopId Int?
+
+  authorId Int?
+
+  title String?
+
+  content String
+
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  tripStop TripStop? @relation(fields: [tripStopId], references: [id])
+
+  author User? @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  tripId      Int
+  stopId      Int?
+  userId      Int
+  category    String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trip Trip      @relation(fields: [tripId], references: [id])
+  stop TripStop? @relation(fields: [stopId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
+}
